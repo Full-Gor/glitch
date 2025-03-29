@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matrix avec Titre Rebondissant</title>
+    <title>Matrix avec Titre Lettre par Lettre</title>
     <style>
         body, html {
             margin: 0;
@@ -146,95 +146,49 @@
         // Nombre de colonnes
         const columns = Math.floor(canvas.width / fontSize);
         
-        // Classe pour représenter une goutte de Matrix
-        class MatrixDrop {
-            constructor(x, color) {
-                this.x = x;
-                this.y = Math.floor(Math.random() * -canvas.height);
-                this.color = color;
-                this.speed = Math.random() * 3 + 2; // Vitesse initiale
-                this.bounceCount = 0; // Compteur de rebonds
-            }
-            
-            draw(ctx) {
-                const char = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
-                ctx.fillStyle = this.color;
-                ctx.fillText(char, this.x, this.y);
-            }
-            
-            update(titleBounds) {
-                // Vérifier la collision avec le titre
-                const isColliding = (
-                    this.y >= titleBounds.top && 
-                    this.y <= titleBounds.bottom && 
-                    this.x >= titleBounds.left && 
-                    this.x <= titleBounds.right
-                );
-                
-                if (isColliding) {
-                    // Effet de rebond
-                    this.speed = -this.speed * 0.7; // Inverser et réduire la vitesse
-                    this.y = titleBounds.top - 1; // Légèrement au-dessus du titre
-                    this.bounceCount++;
-                } else {
-                    // Mouvement normal
-                    this.y += this.speed;
-                }
-                
-                // Réinitialiser si hors de l'écran
-                if (this.y > canvas.height) {
-                    this.y = Math.floor(Math.random() * -canvas.height);
-                    this.speed = Math.random() * 3 + 2;
-                    this.bounceCount = 0;
-                }
-            }
-        }
-        
-        // Créer les gouttes de Matrix
+        // Tableau pour les positions Y
         const drops = [];
+        
+        // Couleurs
+        const colors = [];
+        
+        // Initialiser les tableaux
         for (let i = 0; i < columns; i++) {
-            const color = Math.random() > 0.5 ? 'red' : 'cyan';
-            drops.push(new MatrixDrop(i * fontSize, color));
+            drops[i] = Math.floor(Math.random() * -100); // Position initiale négative
+            colors[i] = Math.random() > 0.5 ? 'red' : 'cyan'; // Alternance rouge et cyan
         }
         
-        // Obtenir la position et les dimensions du titre
-        function getTitleBounds() {
-            const titleElement = document.getElementById('glitch-title');
-            const rect = titleElement.getBoundingClientRect();
-            return {
-                left: rect.left,
-                right: rect.right,
-                top: rect.top,
-                bottom: rect.bottom,
-                width: rect.width,
-                height: rect.height
-            };
-        }
-        
-        // Fonction d'animation
-        function animate() {
-            // Effacer le canvas avec un effet de traînée
+        // Fonction d'animation Matrix
+        function draw() {
+            // Fond semi-transparent
             ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             // Configurer la police
             ctx.font = fontSize + 'px monospace';
             
-            // Obtenir les limites du titre
-            const titleBounds = getTitleBounds();
-            
-            // Mettre à jour et dessiner chaque goutte
-            drops.forEach(drop => {
-                drop.update(titleBounds);
-                drop.draw(ctx);
-            });
-            
-            // Animer
-            requestAnimationFrame(animate);
+            // Dessiner chaque colonne
+            for (let i = 0; i < columns; i++) {
+                // Sélectionner un caractère aléatoire
+                const char = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
+                
+                // Définir la couleur
+                ctx.fillStyle = colors[i];
+                
+                // Dessiner le caractère
+                ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+                
+                // Faire tomber la goutte ou la réinitialiser
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                } else {
+                    drops[i]++;
+                }
+            }
         }
         
-        // Démarrer l'animation
-        animate();
+        // Animation avec setInterval
+        setInterval(draw, 50);
         
         // Création du titre lettre par lettre
         const glitchTitle = document.getElementById('glitch-title');
@@ -289,8 +243,8 @@
             
             // Ajuster les tableaux si nécessaire
             while (drops.length < newColumns) {
-                const color = Math.random() > 0.5 ? 'red' : 'cyan';
-                drops.push(new MatrixDrop(drops.length * fontSize, color));
+                drops.push(Math.floor(Math.random() * -100));
+                colors.push(Math.random() > 0.5 ? 'red' : 'cyan');
             }
         });
     </script>
